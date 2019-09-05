@@ -7,6 +7,7 @@ add_subdirectory("common")
 add_subdirectory("beaconing")
 add_subdirectory("pb_remote")
 add_subdirectory("light_switch")
+add_subdirectory("performance_test")
 
 if (NOT PLATFORM MATCHES "nrf52810")
     add_subdirectory("enocean_switch")
