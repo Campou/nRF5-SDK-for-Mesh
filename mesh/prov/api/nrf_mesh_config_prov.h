@@ -79,7 +79,7 @@
 
 /** PB-GATT feature. To be enabled only in combination with linking GATT files. */
 #ifndef MESH_FEATURE_PB_GATT_ENABLED
-#define MESH_FEATURE_PB_GATT_ENABLED 0
+#define MESH_FEATURE_PB_GATT_ENABLED 1
 #endif
 
 /** The default advertisement interval of the unprovisioned beacon. Meant for PB-ADV. */

@@ -42,6 +42,7 @@
 #include "example_common.h"
 #include "nrf_mesh_prov.h"
 #include "nrf_mesh_prov_bearer_adv.h"
+#include "nrf_mesh_prov_bearer_gatt.h"
 #include "nrf_mesh_events.h"
 #include "mesh_app_utils.h"
 #include "nrf_mesh_config_app.h"
@@ -62,7 +63,11 @@ typedef enum
 static uint8_t m_public_key[NRF_MESH_PROV_PUBKEY_SIZE];
 static uint8_t m_private_key[NRF_MESH_PROV_PRIVKEY_SIZE];
 
+#if MESH_FEATURE_PB_GATT_ENABLED
+static nrf_mesh_prov_bearer_gatt_t m_prov_bearer_gatt;
+#else
 static nrf_mesh_prov_bearer_adv_t m_prov_bearer_adv;
+#endif
 static nrf_mesh_prov_ctx_t m_prov_ctx;
 static const char **mp_uri_filter;
 static const char *mp_current_uri;
@@ -108,7 +113,11 @@ static void start_provisioning(const uint8_t * p_uuid)
         };
     memcpy(prov_data.netkey, m_provisioner.p_nw_data->netkey, NRF_MESH_KEY_SIZE);
     ERROR_CHECK(nrf_mesh_prov_generate_keys(m_public_key, m_private_key));
+#if MESH_FEATURE_PB_GATT_ENABLED
+    ERROR_CHECK(nrf_mesh_prov_provision(&m_prov_ctx, p_uuid, m_provisioner.attention_duration_s, &prov_data, NRF_MESH_PROV_BEARER_GATT));
+#else
     ERROR_CHECK(nrf_mesh_prov_provision(&m_prov_ctx, p_uuid, m_provisioner.attention_duration_s, &prov_data, NRF_MESH_PROV_BEARER_ADV));
+#endif
 }
 
 static void prov_helper_provisioner_init(void)
@@ -118,7 +127,12 @@ static void prov_helper_provisioner_init(void)
         nrf_mesh_prov_oob_caps_t capabilities = NRF_MESH_PROV_OOB_CAPS_DEFAULT(ACCESS_ELEMENT_COUNT);
         /* Keys are generated upon start_provisioning(). */
         ERROR_CHECK(nrf_mesh_prov_init(&m_prov_ctx, m_public_key, m_private_key, &capabilities, prov_evt_handler));
+#if MESH_FEATURE_PB_GATT_ENABLED
+        ERROR_CHECK(nrf_mesh_prov_bearer_gatt_init(&m_prov_bearer_gatt));
+        ERROR_CHECK(nrf_mesh_prov_bearer_add(&m_prov_ctx, nrf_mesh_prov_bearer_gatt_interface_get(&m_prov_bearer_gatt)));
+#else
         ERROR_CHECK(nrf_mesh_prov_bearer_add(&m_prov_ctx, nrf_mesh_prov_bearer_adv_interface_get(&m_prov_bearer_adv)));
+#endif
     }
 
     m_provisioner_init_done = true;
